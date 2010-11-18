@@ -26,14 +26,15 @@ package org.jcrontab.data;
 
 import java.util.Calendar;
 import java.util.Date;
-
+import java.util.Vector;
+import java.util.Random;
 import org.jcrontab.log.Log;
 
 /** This class processes a CrontabEntryBean and returns a Calendar. This class 
  * is a "conversor" to convert from CrontabEntries to Calendars.
  * Thanks to Javier Pardo for the idea and for the Algorithm
  * @author $Author: iolalla $
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.7 $
  */
 
 public class CalendarBuilder  {
@@ -87,22 +88,24 @@ public class CalendarBuilder  {
 		Calendar after = Calendar.getInstance();
         after.setTime(afterDate);
 
-		int second = getNextIndex(ceb.getBSeconds(), after.get(Calendar.SECOND));
+		boolean[] seconds = ceb.getBSeconds();
+		int afterSeconds = after.get(Calendar.SECOND);
+		int second = getNextIndex(seconds, afterSeconds);
         if (second == -1) {
-            second = getNextIndex(ceb.getBSeconds(), 0);
+            second = getNextIndex(seconds, 0);
             after.add(Calendar.MINUTE, 1);
         }
 		
         int minute = getNextIndex(ceb.getBMinutes(), after.get(Calendar.MINUTE));
         if (minute == -1) {
-			second = getNextIndex(ceb.getBSeconds(), 0);
+			second = getNextIndex(seconds, 0);
             minute = getNextIndex(ceb.getBMinutes(), 0);
             after.add(Calendar.HOUR_OF_DAY, 1);
         }
 
         int hour = getNextIndex(ceb.getBHours(), after.get(Calendar.HOUR_OF_DAY));
         if (hour == -1) {
-			second = getNextIndex(ceb.getBSeconds(), 0);
+			second = getNextIndex(seconds, 0);
             minute = getNextIndex(ceb.getBMinutes(), 0);
             hour = getNextIndex(ceb.getBHours(), 0);
             after.add(Calendar.DAY_OF_MONTH, 1);
@@ -112,7 +115,7 @@ public class CalendarBuilder  {
         
         
         if (dayOfMonth == -1) {
-			second = getNextIndex(ceb.getBSeconds(), 0);
+			second = getNextIndex(seconds, 0);
             minute = getNextIndex(ceb.getBMinutes(), 0);
             hour = getNextIndex(ceb.getBHours(), 0);
             dayOfMonth = getNextIndex(ceb.getBDaysOfMonth(), 0);
@@ -131,7 +134,7 @@ public class CalendarBuilder  {
         
         int month = getNextIndex(ceb.getBMonths(), after.get(Calendar.MONTH));
         if (month == -1) {
-			second = getNextIndex(ceb.getBSeconds(), 0);
+			second = getNextIndex(seconds, 0);
             minute = getNextIndex(ceb.getBMinutes(), 0);
             hour = getNextIndex(ceb.getBHours(), 0);
             dayOfMonth = getNextIndex(ceb.getBDaysOfMonth(), 0);
@@ -153,11 +156,6 @@ public class CalendarBuilder  {
              return buildCalendar(ceb , calendar.getTime());
          }
 	}
-    
-    public int getThisYear() {
-        Calendar rightNow = Calendar.getInstance();
-        return rightNow.YEAR;
-    }
 	/**This method builds a Date from a CrontabEntryBean and from a starting 
      * Date
      * @return Date builded with those parameters

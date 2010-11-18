@@ -31,15 +31,15 @@ import java.util.Date;
  * This class helps the testing process to make easier testing
  * The objective of this test is to test Thread passing parameters 
  * to the constructor
- * @author $Author: dep4b $
- * @version $Revision: 1.9 $
+ * @author $Author: iolalla $
+ * @version $Revision: 1.8 $
  */
 public class TaskTest3 extends Thread {
 	
 	private static String[] args;
 
 	public TaskTest3(String[] args){
-		TaskTest3.args = args;
+		this.args = args;
 	}
 
 	public void run() {

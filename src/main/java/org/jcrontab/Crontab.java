@@ -24,19 +24,9 @@
  */
 package org.jcrontab;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.Calendar;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.jcrontab.data.HoliDay;
-import org.jcrontab.data.HoliDayFactory;
+import java.io.*;
+import java.util.*;
+import org.jcrontab.data.*;
 import org.jcrontab.log.Log;
 
 
@@ -44,16 +34,16 @@ import org.jcrontab.log.Log;
  * Manages the creation and execution of all the scheduled tasks 
  * of jcrontab. This class is the core of the jcrontab
  * @author $Author: iolalla $
- * @version $Revision: 1.65 $
+ * @version $Revision: 1.56 $
  */
 
 public class Crontab {
     
-    private String version = "2.0.RC1";
+    private String version = "1.4";
     private HashMap tasks;
     private HashMap loadedClasses;
     private int iNextTaskID;
-    private Properties prop = null;
+    private Properties prop = new Properties();
     private int iTimeTableGenerationFrec = 3;
     /** The Cron that controls the execution of the tasks */
     private Cron cron;
@@ -67,7 +57,7 @@ public class Crontab {
 										"jcrontab.properties";
 	private boolean isInternalConfig = true;
     /** The only instance of this cache */
-    private static Crontab singleton = null;
+    private static Crontab singleton = new Crontab();
     
     /**
      * Crontab constructor
@@ -86,10 +76,7 @@ public class Crontab {
      *  Change the private constructor to public.
      *  @return singleton the only instance of this class
      */
-    public static synchronized Crontab getInstance(){
-			if (singleton == null){
-				singleton = new Crontab();
-			}
+    public static synchronized Crontab getInstance(){ 
 			return singleton;
     }
     
@@ -120,7 +107,7 @@ public class Crontab {
     public void init(String strFileName)
                     throws Exception {
 
-	   Crontab.strFileName = strFileName;
+	   this.strFileName = strFileName;
 				loadConfig();
 	   String refreshFrequency = 
 					getProperty("org.jcrontab.Crontab.refreshFrequency");
@@ -147,7 +134,7 @@ public class Crontab {
      */
     public void init(Properties props) 
                     throws Exception {
-		Crontab.strFileName = null;
+		this.strFileName = null;
 		String refreshFrequency = 
 					props.getProperty("org.jcrontab.Crontab.refreshFrequency");
 		this.prop = props;
@@ -196,34 +183,6 @@ public class Crontab {
         }
     }
     /**
-     * This method is here to make easier to access all the properties names
-     * @return String[] all the properties valid in the config file
-     */
-    public String[] getAllThePropertiesNames() {
-        String[] list = {"org.jcrontab.config",
-                        "org.jcrontab.data.file", 
-                        "org.jcrontab.data.datasource",
-                        "org.jcrontab.Crontab.refreshFrequency",
-                        "org.xml.sax.driver",
-                        "org.jcrontab.data.GenericSQLSource.driver",
-                        "org.jcrontab.data.GenericSQLSource.url",
-                        "org.jcrontab.data.GenericSQLSource.username",
-                        "org.jcrontab.data.GenericSQLSource.password",
-                        "org.jcrontab.data.GenericSQLSource.dbDataSource",
-                        "org.jcrontab.sendMail.to",
-                        "org.jcrontab.sendMail.from",
-                        "org.jcrontab.sendMail.smtp.host",
-                        "org.jcrontab.sendMail.smtp.user",
-                        "org.jcrontab.sendMail.smtp.password",
-                        "org.jcrontab.log.Logger",
-                        "org.jcrontab.log.log4J.Properties",
-                        "org.jcrontab.data.FileOpener",
-                        "org.jcrontab.data.holidaysource",
-                        "org.jcrontab.data.holidaysfilesource",
-                        "org.jcrontab.data.dateFormat"};
-         return list;
-    }
-    /**
      * This method sets the Cron to daemon or not
 	 *	@param boolean daemon
 	 *  @throws Exception
@@ -237,14 +196,13 @@ public class Crontab {
 	 *	@param property
 	 *  @throws Exception
 	 */
-	public void loadConfig() throws Exception {
-	     // Get the Params from the config File
+	private void loadConfig() throws Exception {
+	 // Get the Params from the config File
          // Don't like those three lines. But are the only way i have to grant
          // It works in any O.S.
          if (strFileName.indexOf("\\") != -1) {
 			strFileName= strFileName.replace('\\','/');
          }
-         if (prop == null) prop = new Properties();
 		 try {
 		 File filez = new File(strFileName);
 		 FileInputStream input = new FileInputStream(filez);
@@ -267,39 +225,15 @@ public class Crontab {
 												strFileName);
 			}
 		 }
-         prop.setProperty("org.jcrontab.config", strFileName);
-         prop.setProperty("org.jcrontab.version", version);
+         prop.setProperty("version", version);
 	}
-    
-    /**
-	 *	This method returns all the properties basically to show them
-	 *  @return Properties prop
-	 */
-    public Properties getConfig() {
-        if (prop == null) {
-            try {
-                loadConfig();
-            } catch (Exception e) {
-                Log.error(e.toString(), e);
-            }
-        }
-        return prop;
-    }
-    /**
-	 *	This method sets the right values for the configuration
-	 *  @param String properties
-	 */
-    public void setConfig(String properties) {
-        strFileName = properties;
-    }
-    
 	/**
 	 *	This method gets the value of the given property
 	 *	@param property
 	 *  @return value
 	 */
-	public String getProperty(String name) {
-		 return	prop.getProperty(name);
+	public String getProperty(String property) {
+		 return	prop.getProperty(property);
 	}
 	
 	/**
@@ -307,27 +241,10 @@ public class Crontab {
 	 *	@param property
 	 *  @param value
 	 */
-	 public void setProperty(String name, String value) {
-		 prop.setProperty(name, value);
+	 public void setProperty(String property, String value) {
+		 prop.setProperty(property, value);
 	}
 	
-    /**
-	 *	This method removes the given property
-	 *	@param property
-	 *  @param value
-	 */
-	 public void removeProperty(String name) {
-		 prop.remove(name);
-         try {
-			 File filez = new File(strFileName);
-			 filez.delete();
-			 OutputStream out = new FileOutputStream(filez);
-			 prop.store(out, "#");
-             out.close();
-	     } catch (Exception e){
-			Log.error(e.toString(), e);
-		 }
-	}
 	/**
 	 *	This method Stores in the properties File the given property and all the
 	 *  "live" properties
@@ -340,8 +257,7 @@ public class Crontab {
 			 File filez = new File(strFileName);
 			 filez.delete();
 			 OutputStream out = new FileOutputStream(filez);
-			 prop.store(out, "#");
-             out.close();
+			 prop.store(out, "Jcrontab Automatic Properties");
 	     } catch (Exception e){
 			Log.error(e.toString(), e);
 		 }
@@ -361,12 +277,8 @@ public class Crontab {
         for (int i = 0; i< holidays.length; i++) {
             Calendar holiday = Calendar.getInstance();
             holiday.setTime(holidays[i].getDate());
-	    if (holiday.get(Calendar.MONTH) == 
-		today.get(Calendar.MONTH) &&    
-		holiday.get(Calendar.DAY_OF_MONTH) ==
-		today.get(Calendar.DAY_OF_MONTH) && 
-		holiday.get(Calendar.YEAR) == 
-		today.get(Calendar.YEAR)) {
+             if (holiday.MONTH == today.MONTH &&
+                 holiday.DAY_OF_MONTH == today.DAY_OF_MONTH) {
                      return true;
              }
         }

@@ -29,7 +29,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  *	This class is a utility to make easier the instalation and use of jcrontab
@@ -37,8 +40,8 @@ import java.io.InputStreamReader;
  * "crontab" and set a default initial properties ready to work in any system
  *  The reason why this class was added was to make it easier to integrate with
  *  jEdit
- * @author $Author: dep4b $
- * @version $Revision: 1.11 $
+ * @author $Author: iolalla $
+ * @version $Revision: 1.10 $
  */
 public class DefaultFiles {
 	

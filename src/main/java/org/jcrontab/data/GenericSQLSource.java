@@ -26,15 +26,14 @@
 package org.jcrontab.data;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Vector;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-
 import org.jcrontab.Crontab;
 import org.jcrontab.log.Log;
 
@@ -42,8 +41,12 @@ import org.jcrontab.log.Log;
  * This class is only a generic example and doesn't aim to solve all the needs
  * for the differents system's. if you want to make this class to fit your needs
  * feel free to do it and remember the license.
+ * On of the things this class does is to open a connection to the database
+ * , this is nasty and very expensive, y you want to integrate jcrontab with a 
+ * pool like poolman or jboss it's quite easy, should substitute connection logic
+ * with particular one.
  * @author $Author: iolalla $
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.37 $
  */
 public class GenericSQLSource implements DataSource {
 	
@@ -146,7 +149,7 @@ public class GenericSQLSource implements DataSource {
 		    if(rs!=null) {
 			while(rs.next()) {
                 boolean[] bSeconds = new boolean[60];
-                boolean[] bYears = new boolean[2500];
+                boolean[] bYears = new boolean[10];
                 int id = rs.getInt("id");
                 String second = rs.getString("second");
 			    String minute = rs.getString("minute");
@@ -161,9 +164,14 @@ public class GenericSQLSource implements DataSource {
 				+ " " + month + " " 
 				+ dayofweek + " " + task + " " + extrainfo;
                 
-                boolean businessDays = rs.getBoolean("businessDays");
-
-		CrontabEntryBean ceb = cp.marshall(line);
+                String sBusinessDays = rs.getString("businessDays");
+                boolean businessDays = false ;
+                if (sBusinessDays != null && 
+                                    sBusinessDays.equalsIgnoreCase("true")) {
+                    businessDays = true ;
+                }
+                
+			    CrontabEntryBean ceb = cp.marshall(line);
                 
                 cp.parseToken(year, bYears, false);
                 ceb.setId(id);
@@ -250,7 +258,7 @@ public class GenericSQLSource implements DataSource {
                     ps.setString(5 , beans[i].getDaysOfMonth());
                     ps.setString(6 , beans[i].getMonths());
                     ps.setString(7 , beans[i].getDaysOfWeek());
-                    ps.setString(8 , beans[i].getYears());
+                    ps.setString(8 , beans[i].getYear());
                     if ("".equals(beans[i].getMethodName())) { 
                         ps.setString(9 , beans[i].getClassName());
                     } else {
@@ -274,6 +282,23 @@ public class GenericSQLSource implements DataSource {
 		try { ps.close(); } catch (Exception e) {}
 		try { conn.close(); } catch (Exception e2) {}
 	    }
+	}
+	
+	/**
+	 *  This method saves the CrontabEntryBean the actual problem with this
+	 *  method is that doesn't store comments and blank lines from the 
+	 *  original file any ideas?
+	 *  @param CrontabEntryBean bean this method only lets store an 
+	 * entryBean each time.
+	 *  @throws CrontabEntryException when it can't parse the line correctly
+     *  @throws ClassNotFoundException cause loading the driver can throw an
+     *  ClassNotFoundException
+     *  @throws SQLException Yep can throw an SQLException too
+	 */
+	public void store(CrontabEntryBean bean) throws  CrontabEntryException, 
+                            ClassNotFoundException, SQLException {
+                            CrontabEntryBean[] list = {bean};
+                            store(list);
 	}
     /**
      * Retrieves a connection to the database.  May use a Connection Pool 

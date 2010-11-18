@@ -25,6 +25,7 @@
  
 package org.jcrontab.data;
 
+import java.util.Vector;
 import org.jcrontab.log.Log;
 
 /***
@@ -32,47 +33,32 @@ import org.jcrontab.log.Log;
  * This class is an abstraction to make esaier the integration of new
  * DataSources that help to access CrontabEntries in new ways
  * @author $Author: iolalla $
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.18 $
  */
 public class CrontabEntryDAO {
 	/**
 	 *This insntance grants only an instance of this DAO in
 	 * every system 
 	 */
-	private static CrontabEntryDAO instance;
+	private static CrontabEntryDAO instance = new CrontabEntryDAO();
 
 	/** This DataSource is the reason of this class */
-	private static DataSource dao = null;
+	private static DataSource dao = DataFactory.getDAO();
+ 
 	
 	/**
-	 * Default constructor This one initializes everything maybe 
-	 * could use lazy inizialization
+	 * Default constructor This one initializes everything maybe could use lazy
+	 * inizialization
 	 */
 	private CrontabEntryDAO() {
-		   if ( dao == null) {
-				try {
-				dao = DataFactory.getInstance().getDAO();
-				} catch (Exception e) {
-					Log.error(e.toString(), e);
-				}
-		   }
+
 	}	
     /**
-	 *	This method returns the singleton is very important to grant
-	 *  That only a Thread accesses at a time
+	 * This method returns the singleton is very important to grant That only a
+	 * Thread accesses at a time
 	 */
-	public synchronized static CrontabEntryDAO getInstance() {
-		if (instance == null) {
-            instance = new CrontabEntryDAO();
-		}
+	public synchronized static CrontabEntryDAO getInstance() { 
 		return instance;
-	}
-    /**
-	 *	This method returns the singleton is very important to grant
-	 *  That only a Thread accesses at a time
-	 */
-	public synchronized static CrontabEntryDAO getNewInstance() {
-            return new CrontabEntryDAO();
 	}
 	/**
 	 *	Gets all the CrontabEntryBean from the DataSource
@@ -104,24 +90,17 @@ public class CrontabEntryDAO {
 	 * @throws Exception
 	 */
 	public void store(CrontabEntryBean bean) throws Exception {
-        CrontabEntryBean[] cebs = {bean};
-        store(cebs);
+		dao.store(bean);
 	}
-    /**
-	 * removes only one ContabEntryBean CrontabEntryBean in  the DataSource
-	 * @param CrontabEntryBean
-	 * @throws Exception
-	 */
-    public void remove(CrontabEntryBean bean) throws Exception {
-        CrontabEntryBean[] cebs = {bean};
-        remove(cebs);
-    }
    	/**
 	 * removes CrontabEntryBean from the DataSource
-	 * @param CrontabEntryBean[]
+	 * @param CrontabEntryBean
 	 * @throws Exception
 	 */
 	public void remove(CrontabEntryBean[] list) throws Exception {
 		dao.remove(list);
+	}
+	public CrontabEntryBean getById(int indexPar) throws Exception {
+		return findAll()[indexPar];
 	}
 }

@@ -37,22 +37,16 @@ import org.jcrontab.Crontab;
  * This is the Log4jLogger as an example about how to use Log4J to log in 
  * Jcrontab
  * @author $Author: iolalla $
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.5 $
  */
 public class Log4JLogger implements Logger {
 	
 	private static org.apache.log4j.Logger log = 
-		org.apache.log4j.Logger.getLogger("jcrontab");
+								org.apache.log4j.Logger.getLogger("jcrontab");
 	protected InputStream createPropertiesStream(String name)
 		throws IOException {
 		try {
-            InputStream stream = getClass().getResourceAsStream(name);
-
-            	if (stream == null) {
-                	stream = new FileInputStream(name);
-            	}
-
-			return stream;
+			return new FileInputStream(name);
 		} catch (FileNotFoundException fnfe) {
 			try {
 				org.jcrontab.data.DefaultFiles.createLog4jFile();

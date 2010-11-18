@@ -25,15 +25,14 @@
 package org.jcrontab.tests;
 
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Properties;
 
+import junit.framework.*;
+import org.jcrontab.data.*;
 import org.jcrontab.Crontab;
-import org.jcrontab.data.CalendarBuilder;
-import org.jcrontab.data.CrontabEntryBean;
-import org.jcrontab.data.CrontabEntryDAO;
-import org.jcrontab.data.CrontabParser;
 /**
  * Some simple tests.
  *
@@ -50,12 +49,18 @@ public class SimpleTest extends TestCase {
 	super(name);
     }
 
-	
-
     protected void setUp() throws Exception {
+        /**/
          crontab = Crontab.getInstance();
-         crontab.getInstance().init();
-        
+         
+        Properties props = new Properties();
+         
+		 
+		InputStream in = this.getClass().getClassLoader().getResourceAsStream("jcrontab.test.properties");
+		Reader inStream = new InputStreamReader(in );
+		props.load(inStream );
+		crontab.init(props);
+         
         ceb[0] = cp.marshall("* * * * * org.jcrontab.tests.test testing");
         ceb[0].setYears("*");
         ceb[0].setSeconds("0");
@@ -73,10 +78,18 @@ public class SimpleTest extends TestCase {
         ceb[2].setSeconds("0");
         ceb[2].setBusinessDays(true);
         ceb[2].setId(2);
-	 
+        // clear all
+        //CrontabEntryBean[] findAll = CrontabEntryDAO.getInstance().findAll();
+		//CrontabEntryDAO.getInstance().remove(findAll);
+        // init 3 tasks
+        CrontabEntryDAO.getInstance().store(ceb);
+        
 	}
 
 
+    
+    
+    
     public static Test suite() {
 		return new TestSuite(SimpleTest.class);
 
@@ -97,7 +110,7 @@ public class SimpleTest extends TestCase {
 
     public void testDAOFindAll() throws Exception {
         CrontabEntryBean[] listOfBeans= CrontabEntryDAO.getInstance().findAll();
-        assertEquals(listOfBeans.length, 3);
+        assertEquals(listOfBeans.length, 17);
 	}
     
 
@@ -117,4 +130,12 @@ public class SimpleTest extends TestCase {
                            " * * * * * org.jcrontab.tests.TaskTest \n" + 
                            ceb.toXML());
     }
+
+	protected void tearDown() throws Exception {
+        // clear all
+        CrontabEntryDAO instance = CrontabEntryDAO.getInstance();
+		CrontabEntryBean[] findAll = instance.findAll();
+		instance.remove(findAll);		
+		//this.setUp();
+	}
 }

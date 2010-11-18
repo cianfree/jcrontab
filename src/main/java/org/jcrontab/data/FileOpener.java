@@ -24,16 +24,17 @@
  */
 package org.jcrontab.data; 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 /**
  *	This class get an InputStream using the right method, File or 
  * getResourceAsStream, The idea of this way of openning files is from 
  * Sergey Udalstov
- * @author $Author: dep4b $
- * @version $Revision: 1.5 $
+ * @author $Author: iolalla $
+ * @version $Revision: 1.4 $
  */
 
 public class FileOpener {

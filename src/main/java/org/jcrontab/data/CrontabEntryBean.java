@@ -28,15 +28,17 @@ package org.jcrontab.data;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Calendar;
 import java.util.Date;
+import org.jcrontab.CrontabBean;
 
 /** CrontabEntryBeans represents each entry into
- * crontab "DataSource".
- * This Bean allows Jcrontab to interact with
+ * crontab "DataSource" usually a file.
+ * This Bean allows jcrontab to interact with
  * the information from CrontabEntry
  * @author $Author: iolalla $
- * @version $Revision: 1.50 $
+ * @version $Revision: 1.44 $
  */
 public class CrontabEntryBean implements Serializable {
     
@@ -68,38 +70,9 @@ public class CrontabEntryBean implements Serializable {
     private boolean[] bDaysOfWeek;
     private boolean[] bDaysOfMonth;
     private boolean[] bYears;
-    /**
-     * This is the default constructor
-     */
-    public CrontabEntryBean() {}
-    /**
-     * This is a copy  constructor, maybe in the future if is neded more logic
-     * this could go to the CrontabParser.
-     * @param the original ceb
-     */
-     public CrontabEntryBean(CrontabEntryBean original) {
-        this.setClassName(original.getClassName());
-        this.setMethodName(original.getMethodName());
-        this.setExtraInfo(original.getExtraInfo());
-        this.setHours(original.getHours());
-        this.setMinutes(original.getMinutes());
-        this.setSeconds(original.getSeconds());
-        this.setMonths(original.getMonths());
-        this.setDaysOfMonth(original.getDaysOfMonth());
-        this.setYears(original.getYears());
-        this.setBHours(original.getBHours());
-        this.setBMinutes(original.getBMinutes());
-        this.setBMonths(original.getBMinutes());
-        this.setBDaysOfWeek(original.getBDaysOfMonth());
-        this.setBDaysOfMonth(original.getBDaysOfMonth());
-        this.setBSeconds(original.getBSeconds());
-        this.setBYears(original.getBYears());
-        this.setBExtraInfo(original.getBExtraInfo());
-        this.setDescription(original.getDescription());
-        this.setBusinessDays(original.getBusinessDays());
-        this.setStartDate(original.getEndDate());
-        this.setEndDate(original.getEndDate());
-     }
+
+	private String header = "";
+        
 	/** Id setter
 	 * @param id this integer identifies the CrontabEntryBean
 	 */        
@@ -359,7 +332,7 @@ public class CrontabEntryBean implements Serializable {
     /** Year getter
      * @return the year of this CrontabEntryBean
      */
-    public String getYears() {
+    public String getYear() {
 	return years;	
     }
 	/** Description getter
@@ -393,7 +366,7 @@ public class CrontabEntryBean implements Serializable {
 	public String toString(){
         try {
             CrontabParser cp = new CrontabParser();
-        	return cp.unmarshall(this);
+        	return cp.unmarshall(this).trim();
         } catch (Exception e) {
             return e.toString();
         }
@@ -413,28 +386,28 @@ public class CrontabEntryBean implements Serializable {
     * @param pw The printWritter to write the XML
     */        
 	public void toXML(PrintWriter pw) {
+		
+		pw.println("<!--  "+  this.header + "\n -->");
 		pw.println("<crontabentry id=\""+ id + "\">");
-        pw.println("\t<seconds>" + seconds + "</seconds> ");
-		pw.println("\t<minutes>" + minutes + "</minutes> ");
-        pw.println("\t<hours>" + hours + "</hours> ");
-        pw.println("\t<daysofmonth>" + daysOfMonth + "</daysofmonth> ");
-		pw.println("\t<months>" + months + "</months> ");
-		pw.println("\t<daysofweek>" + daysOfWeek + "</daysofweek> ");
-        pw.println("\t<years>" + years + "</years> ");
-        pw.println("\t<bussinesdays>" + runInBusinessDays +"</bussinesdays> " );
-        pw.println("\t<startDate>" + startDate +"</startDate> " );
-        pw.println("\t<endDate>" + endDate +"</endDate> " );
-        pw.println("\t<class>" + className + "</class> ");
-		pw.println("\t<method>" + methodName + "</method> ");
- 		if (bextraInfo) {
-            pw.print("\t<parameters>");
+        pw.println("<seconds>" + seconds + "</seconds> ");
+		pw.println("<minutes>" + minutes + "</minutes> ");
+        pw.println("<hours>" + hours + "</hours> ");
+        pw.println("<daysofmonth>" + daysOfMonth + "</daysofmonth> ");
+		pw.println("<months>" + months + "</months> ");
+		pw.println("<daysofweek>" + daysOfWeek + "</daysofweek> ");
+        pw.println("<years>" + years + "</years> ");
+        pw.println("<bussinesdays>" + runInBusinessDays +"</bussinesdays> " );
+        pw.println("<startDate>" + startDate +"</startDate> " );
+        pw.println("<endDate>" + endDate +"</endDate> " );
+        pw.println("<class>" + className + "</class> ");
+		pw.println("<method>" + methodName + "</method> ");
+ 		if (bextraInfo) {               
 			for (int i = 0; i < extraInfo.length ; i++) {
-                pw.print(extraInfo[i]);
-                if (i < extraInfo.length -1) pw.print(" ");
+			pw.println("<parameters order = \"" + i + "\" >");
+			pw.println(extraInfo[i] + " </parameters>");
 			}
-            pw.println("</parameters>");
-        }
-        pw.println("\t<description>" + description + "</description> ");
+        	}
+                pw.println("<description>" + description + "</description> ");
 		pw.println("</crontabentry>");
 	}
     
@@ -470,7 +443,7 @@ public class CrontabEntryBean implements Serializable {
      * Returns true if the time table entry matchs with the calendar given
      * @param cal Calendar to compare with the time table entry
      * @return true if the time table entry matchs with the calendar given
-     */
+     */    
 	private boolean equalsCalendar(Calendar cal) {
         // IMPORTANT: Day of week and day of month in Calendar begin in
         // 1, not in 0. Thats why we decrement them
@@ -480,8 +453,8 @@ public class CrontabEntryBean implements Serializable {
             bMinutes[cal.get(Calendar.MINUTE)] &&
             bMonths[cal.get(Calendar.MONTH)] &&
             bDaysOfWeek[cal.get(Calendar.DAY_OF_WEEK)-1] &&
-            bDaysOfMonth[cal.get(Calendar.DAY_OF_MONTH)-1] &&
-            bYears[cal.get(Calendar.YEAR)]) ;
+            bDaysOfMonth[cal.get(Calendar.DAY_OF_MONTH)-1]) &&
+            bYears[0] ;
 	}
 
     /** 
@@ -492,48 +465,62 @@ public class CrontabEntryBean implements Serializable {
      */
 	
 	private boolean equalCrontabEntryBean(CrontabEntryBean ceb) {
-	    if ( this.id != ceb.getId()) {
-                return false;
-            }
-            if (!this.getSeconds().equals(ceb.getSeconds())){
-                return false;
-            }
-            if (!this.getMinutes().equals(ceb.getMinutes())){
-                return false;
-            }
-            if (!this.getHours().equals(ceb.getHours())){
-                return false;
-            }
-            if (!this.getDaysOfWeek().equals(ceb.getDaysOfWeek())){
-                return false;
-            }
-            if (!this.getDaysOfMonth().equals(ceb.getDaysOfMonth())){
-                return false;
-            }
-            if (!this.getMonths().equals(ceb.getMonths())){
-                return false;
-            }
-            if (!this.getYears().equals(ceb.getYears())){
-                return false;
-            }
-            if (!this.getClassName().equals(ceb.getClassName())){
-                return false;
-            }
-            if (this.getBExtraInfo() != ceb.getBExtraInfo()){
-                return false;
-            }
-            if (this.getBusinessDays() != ceb.getBusinessDays()){
-                return false;
-            }
-            if (this.getBExtraInfo()) {
-            if (this.getExtraInfo().length != ceb.getExtraInfo().length)
-                return false;
-                for (int i = 0; i < this.getExtraInfo().length ; i++) {
-                     if(!this.getExtraInfo()[i].trim().equals(
-                                ceb.getExtraInfo()[i].trim()))
-                    return false;
-                }
-            }
-            return true;
+// 		if (this.id != ceb.getId()) {
+// 			return false;
+// 		}
+		if (!this.getSeconds().equals(ceb.getSeconds())) {
+			return false;
+		}
+		if (!this.getMinutes().equals(ceb.getMinutes())) {
+			return false;
+		}
+		if (!this.getHours().equals(ceb.getHours())) {
+			return false;
+		}
+		if (!this.getDaysOfWeek().equals(ceb.getDaysOfWeek())) {
+			return false;
+		}
+		if (!this.getDaysOfMonth().equals(ceb.getDaysOfMonth())) {
+			return false;
+		}
+		if (!this.getMonths().equals(ceb.getMonths())) {
+			return false;
+		}
+		if (!this.getYear().equals(ceb.getYear())) {
+			return false;
+		}
+		if (!this.getClassName().equals(ceb.getClassName())) {
+			return false;
+		}
+		if (this.getBExtraInfo() != ceb.getBExtraInfo()) {
+			return false;
+		}
+		if (this.getBusinessDays() != ceb.getBusinessDays()) {
+			return false;
+		}
+		if (this.getBExtraInfo()) {
+			if (this.getExtraInfo().length != ceb.getExtraInfo().length)
+				return false;
+			for (int i = 0; i < this.getExtraInfo().length; i++) {
+				if (!this.getExtraInfo()[i].trim().equals(
+						ceb.getExtraInfo()[i].trim()))
+					return false;
+			}
+		}
+		return true;
+	}
+	public void setHeader(StringBuffer sb) {
+		this.header = sb.toString();
+	}
+	public String getHeader() { 
+			return header;
+	}
+	public void setHeader(String header) {
+		this.header = header;
+	}
+	@Override
+	public int hashCode() {
+		return 
+			this.toString().hashCode();
 	}
 }

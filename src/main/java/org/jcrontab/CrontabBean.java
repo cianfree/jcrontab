@@ -28,6 +28,7 @@ package org.jcrontab;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Calendar;
 
 /**
@@ -35,7 +36,7 @@ import java.util.Calendar;
  * information necesary. Extends Seriazable to be saved in 
  * binary format when neded.
  * @author $Author: iolalla $
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.18 $
  */
 
  public class CrontabBean implements Serializable {
@@ -43,35 +44,40 @@ import java.util.Calendar;
 	/**
 	 *	This calendar defines the CrontabBean 
 	 */
-	private Calendar cal;
+	public Calendar cal;
      /**
 	 *	Time in milliseconds from 1970 to the execution of this 
 	 *  CrontabBean
 	 */
-	private long timeMillis;
+	public long timeMillis;
      /**
 	 *	This CrontabBean Id
 	 */
-	private int id;
+	public int id;
 	 /**
 	 *	This CrontabBean name
 	 */
-	private String className;
+	public String className;
 	/**
 	 *	This CrontabBean methodName
 	 */
-	private String methodName;
+	public String methodName;
 	/**
 	 *	This CrontabBean bextraInfo to save time if the 
 	 * extraInfo Exists
 	 */
-	private boolean bextraInfo = false;
+	public boolean bextraInfo = false;
 	/**
 	 *	This CrontabBean extraInfo I mean the parameters given :-)
 	 */
-	private String[] extraInfo;
-    
-    /**
+	public String[] extraInfo;
+
+        /**
+	 * Default void constuctor.
+	 */
+	public CrontabBean(){
+	}
+         /**
 	 *	This CrontabBean Id setter
 	 */        
 	public void setId(int id){

@@ -25,6 +25,7 @@
  
 package org.jcrontab.data;
 
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -32,7 +33,7 @@ import java.util.Date;
  * This Bean reresents the basis to build BussnesDays logic, basically represents
  * the Holiday 
  * @author $Author: iolalla $
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.2 $
  */
 public class HoliDay {
     
@@ -98,8 +99,8 @@ public class HoliDay {
     }
      /** 
      * Helps to do the castings in a more simple way.
-     * @param obj Object to cast to HoliDay
-     * @return The resulting array of HoliDay
+     * @param obj Object to cast to CrontabEntryBean
+     * @return The resulting array of CrontabEntryBean
      */    
     public static HoliDay[] toArray(Object[] obj) {
         HoliDay[] holiday = new HoliDay[obj.length];

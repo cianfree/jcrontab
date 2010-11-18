@@ -25,6 +25,7 @@
 
 package org.jcrontab.data;
 
+import java.util.Properties;
 import org.jcrontab.Crontab;
 import org.jcrontab.log.Log;
 
@@ -32,8 +33,8 @@ import org.jcrontab.log.Log;
  * This Factory builds a dao using teh given information.
  * Initializes the system with the given properties or 
  * loads the default config
- * @author $Author: dep4b $
- * @version $Revision: 1.24 $
+ * @author $Author: iolalla $
+ * @version $Revision: 1.23 $
  */
 
 public class DataFactory {
@@ -41,22 +42,25 @@ public class DataFactory {
     private static DataFactory instance;
     
     private static DataSource dao = null;
+    static { 
+		try {
+			Crontab instance2 = Crontab.getInstance();
+			String className = instance2
+					.getProperty("org.jcrontab.data.datasource");
+			Class classTmp = Class.forName(className);
+			dao = ((DataSource) classTmp.newInstance()).getInstance();
+		} catch (Exception e) {
+			Log.error(e.toString(), e);
+		}
+
+	}
 	
 	/**
-	 *	Default Constructor private
+	 * Default Constructor private
 	 */
     private DataFactory() {
-	   if ( dao == null) {
-		try {
-		 dao = ((DataSource)Class.forName(Crontab.getInstance()
-                                    .getProperty("org.jcrontab.data.datasource"))
-                                    .newInstance())
-                                    .getInstance();
-		} catch (Exception e) {
-		    Log.error(e.toString(), e);
-		}
-	   }
-    }
+
+	}
     /** 
 	 * This method returns the DataFactory of the System This method
 	 * grants the Singleton pattern

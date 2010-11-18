@@ -26,20 +26,23 @@ package org.jcrontab.web;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.Vector;
-
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
 import org.jcrontab.data.CrontabEntryBean;
 import org.jcrontab.data.CrontabEntryDAO;
 import org.jcrontab.data.CrontabParser;
@@ -51,8 +54,8 @@ import org.jcrontab.log.Log;
  * This represents the contoller and the actions in a MVC pattern
  * Usually this servlet is used tiwh a xsl file to generate the final HTML 
  * 
- * @author $Author: dep4b $
- * @version $Revision: 1.29 $
+ * @author $Author: iolalla $
+ * @version $Revision: 1.28 $
  */
 public class CrontabServletXML extends HttpServlet {
     
@@ -108,19 +111,15 @@ public class CrontabServletXML extends HttpServlet {
 			request.setAttribute("error", errors);
 			show(request, response);
 		} else {
-			String[] idToDelete = request.getParameterValues("remove");
+			String[] idToDelete = request.getParameterValues("event"+"");
 			CrontabEntryBean result[] = new CrontabEntryBean[idToDelete.length];
-			for (int i = 0; i < idToDelete.length ; i++) {
-				CrontabEntryBean resulti = new CrontabEntryBean();
-				resulti.setId(Integer.parseInt(idToDelete[i]));
+			CrontabEntryDAO daoTmp = CrontabEntryDAO.getInstance();
 			try {
-				result[i] =  CrontabEntryDAO.getInstance().find(resulti); 
-			} catch (Exception e) {
-				Log.error(e.toString(), e);
-			}
-			}
-			try {
-			CrontabEntryDAO.getInstance().remove(result);
+				for (int i = 0; i < idToDelete.length ; i++) {
+					CrontabEntryBean resulti =daoTmp.getById(Integer.parseInt(idToDelete[i]));  
+					result[i] =  resulti;				 
+				} 
+				daoTmp.remove(result);
 			} catch (Exception e){
 				errors.add(e.toString());
 				request.setAttribute("error", errors);

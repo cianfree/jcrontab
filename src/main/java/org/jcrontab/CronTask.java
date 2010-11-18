@@ -27,14 +27,12 @@ package org.jcrontab;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBObject;
-import javax.naming.InitialContext;
+import java.util.Arrays; 
+import javax.naming.InitialContext; 
 
 import org.jcrontab.log.Log;
 
@@ -44,22 +42,18 @@ import org.jcrontab.log.Log;
  * If a new kind of task is desired, this class should be extended and the
  * abstract method runTask should be overwritten.
  * @author $Author: iolalla $
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.27 $
  */
-public class CronTask extends Thread {
+public class CronTask
+    extends Thread {
     private Crontab crontab;
-    private int taskId;
-    private int processId;
-    private int order;
+    private int identifier;
     private String[] strExtraInfo;
     public String strClassName;
     public String strMethodName;
     public String[] strParams;
     private static Runnable runnable = null;
 
-    public int getTaskId() {
-	return taskId;
-    }
     /**
      * Constructor of a task.
      * @param strClassName Name of the Class
@@ -90,55 +84,27 @@ public class CronTask extends Thread {
      * @param iTaskID Identifier of the task
      * @param strExtraInfo Extra information given to the task when created
      */
-    public void setParams(Crontab cront, int taskID, 
+    public final void setParams(Crontab cront, int iTaskID, 
                                 String strClassName, String strMethodName, 
                                 String[] strExtraInfo) {
         crontab = cront;
-        taskId = taskID;
+        identifier = iTaskID;
         this.strExtraInfo = strExtraInfo;
         this.strMethodName = strMethodName;
         this.strClassName = strClassName;
-    }
-    /** 
-     * This method sets the order to execute this task
-     * @param order int the order.
-     */
-    public void setOrder(int order) {
-        this.order = order;
-    }
-        /** 
-     * This method gets the order to execute this task
-     * @return order int the order.
-     */
-    public int getOrder() {
-        return order;
-    }
-    /** 
-     * This method sets the id of the process that executes the task
-     * @param procesId the id of the process that executes the task
-     */
-    public void setProcessId(int processId) {
-        this.processId = processId;
-    }
-    /** 
-     * This method gets the id of the process that executes the task
-     * @return procesId the id of the process that executes the task
-     */
-    public int getProcessId() {
-        return processId;
     }
     /**
      * Returns the aditional parameters given to the task in construction
      * @return The aditional parameters given to the task in construction
      */
-    protected String[] getExtraInfo() {
+    protected final String[] getExtraInfo() {
         return strExtraInfo;
     }
     /**
      * Returns the Method Name given to the task in construction
      * @return The aditional parameters given to the task in construction
      */
-    protected String getMethodName() {
+    protected final String getMethodName() {
         return strMethodName;
     }
     /**
@@ -174,7 +140,7 @@ public class CronTask extends Thread {
                             // but?
                             runnable = (Runnable)cl.newInstance();
                         }
-			
+
                         runnable.run();
                     }
 
@@ -215,44 +181,15 @@ public class CronTask extends Thread {
                 }
             }
         } catch (Exception e) {
-            // This code was sended by 
-            if (strMethodName != null && strMethodName.length() > 0) {
-                Log.info("Unable to instantiate class '" + strClassName 
-                        + "', trying as Stateless Session EJB");
-
-                try {
-                    // Use default initial context
-                    InitialContext ic = new InitialContext() ; 
-                    EJBHome home = (EJBHome) ic.lookup(strClassName) ; 
-
-                    // Stateless Session Beans MUST have create() method
-                    Method createMethod = home.getClass().getMethod("create", new Class[0]);
-                    EJBObject ejb = (EJBObject) createMethod.invoke(home, new Object[0]);
-
-                    Log.info("Invoking method: " + strMethodName 
-                            + " with params:" + Arrays.asList(strExtraInfo));
-
-                    if (strExtraInfo.length == 1 && (strExtraInfo[0] == null 
-                            || "null".equalsIgnoreCase(strExtraInfo[0]))) {
-                        Object[] arg = new Object[0];
-                        Class[] argTypes = new Class[0];
-                        Method method = ejb.getClass().getMethod(strMethodName, argTypes);
-                        method.invoke(ejb, arg);                                    
-                    } else { 
-                        Object[] arg = {strExtraInfo};
-                        Class[] argTypes = {String[].class};
-                        Method method = ejb.getClass().getMethod(strMethodName, argTypes);
-                        method.invoke(ejb, arg);                
-                    } 
-                } catch (Exception e2) {
-                    Log.error(e2.toString(), e2);            
-                }
+        	if (strMethodName != null && strMethodName.length() > 0) {
+        		EJBLookup.tryEjb(strClassName, strMethodName, strExtraInfo);
             } else { 
                 Log.error("Unable to instantiate class: " + strClassName, e) ; 
-            } 
+            }        		
         }
     }
-    /**
+ 
+	/**
      * Runs this task
      */
     public final void run() {
@@ -272,7 +209,7 @@ public class CronTask extends Thread {
             runTask();
 
             // Deletes the task from the crontab array
-            crontab.getInstance().deleteTask(taskId);
+            crontab.getInstance().deleteTask(identifier);
 
             //This line sends the email to the config
             if (Crontab.getInstance().getProperty("org.jcrontab.SendMail.to") 
