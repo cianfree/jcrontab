@@ -32,18 +32,14 @@
 		<gwt.style>DETAILED</gwt.style>
 	</properties>
 	<build>
-
 		<plugins>
-
 			<!-- TODO enable to start it from comman-line org.jcrontab.Jcrontab  -->
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>
-								org.jcrontab.Jcrontab
-							</mainClass>
+							<mainClass>org.jcrontab.Jcrontab</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
@@ -85,31 +81,6 @@
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
 			<version>1.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-tools-api</artifactId>
-			<version>${gae.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.appengine.orm</groupId>
-			<artifactId>datanucleus-appengine</artifactId>
-			<version>1.0.6.final</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-1.0-sdk</artifactId>
-			<version>${gae.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-local-runtime</artifactId>
-			<version>${gae.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -156,8 +127,5 @@
 			<version>2.3.3</version>
 			</dependency>
 		-->
-
-
-
 	</dependencies>
 </project>
