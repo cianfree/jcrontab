@@ -196,7 +196,7 @@ public class DAOTest extends TestCase {
     
     public void testFindAll() throws Exception {
         CrontabEntryBean[] ceb2 = CrontabEntryDAO.getInstance().findAll();
-        assertEquals(ceb2.length, 3);
+        assertEquals(17, ceb2.length);
     }
     /**
     public void testRemove()  throws Exception {
