@@ -135,7 +135,9 @@ public class SimpleTest extends TestCase {
         // clear all
         CrontabEntryDAO instance = CrontabEntryDAO.getInstance();
 		CrontabEntryBean[] findAll = instance.findAll();
-		instance.remove(findAll);		
+		if (findAll != null) {
+			instance.remove(findAll);
+		}
 		//this.setUp();
 	}
 }
